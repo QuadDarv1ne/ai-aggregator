@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  title     String    @default("Новый чат")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  role           String       // "user" | "assistant" | "system"
+  content        String
+  provider       String?      // "openai" | "anthropic" | "deepseek" | "kimi"
+  model          String?      // e.g. "gpt-4o", "claude-sonnet-4-20250514"
+  promptTokens   Int          @default(0)
+  completionTokens Int        @default(0)
+  totalTokens    Int          @default(0)
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
+
+model PromptTemplate {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  content     String
+  category    String   @default("general")
+  isFavorite  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model UsageStats {
+  id        String   @id @default(cuid())
+  provider  String
+  model     String
+  date      String   // YYYY-MM-DD
+  promptTokens     Int @default(0)
+  completionTokens Int @default(0)
+  totalTokens      Int @default(0)
+  requestCount     Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, model, date])
+}
