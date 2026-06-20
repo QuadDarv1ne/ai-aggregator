@@ -93,7 +93,7 @@ function Carousel({
     setApi(api)
   }, [api, setApi])
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (!api) return
     onSelect(api)
     api.on("reInit", onSelect)
